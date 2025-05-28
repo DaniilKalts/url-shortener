@@ -1,7 +1,14 @@
 package main
 
+import (
+	"fmt"
+
+	"github.com/DaniilKalts/url-shortener/internal/config"
+)
+
 func main() {
-	// TO-DO: init configuration file
+	cfg := config.MustLoad()
+	fmt.Println(cfg)
 
 	// TO-DO: init logger (slog)
 
