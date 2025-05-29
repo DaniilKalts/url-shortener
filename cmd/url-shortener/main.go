@@ -1,10 +1,12 @@
 package main
 
 import (
+	"github.com/DaniilKalts/url-shortener/internal/storage/sqlite"
 	"log/slog"
 	"os"
 
 	"github.com/DaniilKalts/url-shortener/internal/config"
+	mySlog "github.com/DaniilKalts/url-shortener/lib/logger/slog"
 )
 
 func main() {
@@ -13,7 +15,13 @@ func main() {
 	logger := setupLogger(cfg.Env)
 	logger.Info("Debug logger", slog.Any("env", cfg))
 
-	// TO-DO: init storage (sqlite)
+	storage, err := sqlite.NewStorage(cfg.StoragePath)
+	if err != nil {
+		logger.Error("Error opening storage", mySlog.Err)
+		os.Exit(1)
+	}
+
+	_ = storage
 
 	// TO-DO: init router (chi)
 
