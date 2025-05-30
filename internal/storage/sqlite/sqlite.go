@@ -88,3 +88,28 @@ func (s *Storage) GetURL(alias string) (string, error) {
 
 	return result, nil
 }
+
+func (s *Storage) DeleteURL(alias string) error {
+	var operation = "storage.sqlite.DeleteURL"
+
+	statement, err := s.db.Prepare(`DELETE FROM urls WHERE alias = ?`)
+	if err != nil {
+		return fmt.Errorf("%s - %w", operation, err)
+	}
+	defer statement.Close()
+
+	result, err := statement.Exec(alias)
+	if err != nil {
+		return fmt.Errorf("%s - %w", operation, err)
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s - %w", operation, err)
+	}
+	if n == 0 {
+		return storage.ErrURLNotFound
+	}
+
+	return nil
+}
