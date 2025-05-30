@@ -1,12 +1,15 @@
 package main
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
+	"net/http"
 	"os"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+
 	"github.com/DaniilKalts/url-shortener/internal/config"
+	"github.com/DaniilKalts/url-shortener/internal/http-server/handlers/url/save"
 	"github.com/DaniilKalts/url-shortener/internal/storage/sqlite"
 	mySlog "github.com/DaniilKalts/url-shortener/lib/logger/slog"
 )
@@ -26,12 +29,27 @@ func main() {
 	_ = storage
 
 	router := chi.NewRouter()
+
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	// TO-DO: run server (http)
+	router.Post("/url", save.New(logger, storage))
+
+	logger.Info("Starting server...", slog.String("address", cfg.Address))
+
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		logger.Error("Error starting server", mySlog.Err(err))
+	}
 }
 
 type Environment string
