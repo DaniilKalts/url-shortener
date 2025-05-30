@@ -1,5 +1,8 @@
-# environmet variables
+# Exclude environmet variables
 .env
 
-# IDE specific configuration
+# Exclude IDE specific configuration
 .idea/
+
+# Exclude storage directory
+storage/

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/DaniilKalts/url-shortener/internal/storage/sqlite"
 	"log/slog"
 	"os"
 
 	"github.com/DaniilKalts/url-shortener/internal/config"
+	"github.com/DaniilKalts/url-shortener/internal/storage/sqlite"
 	mySlog "github.com/DaniilKalts/url-shortener/lib/logger/slog"
 )
 
@@ -17,7 +17,7 @@ func main() {
 
 	storage, err := sqlite.NewStorage(cfg.StoragePath)
 	if err != nil {
-		logger.Error("Error opening storage", mySlog.Err)
+		logger.Error("Error opening storage", mySlog.Err(err))
 		os.Exit(1)
 	}
 

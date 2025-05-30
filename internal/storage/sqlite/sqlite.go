@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
+
+	"github.com/DaniilKalts/url-shortener/internal/storage"
 )
 
 type Storage struct {
@@ -22,7 +24,7 @@ func NewStorage(storagePath string) (*Storage, error) {
 	statement, err := db.Prepare(
 		`
 		CREATE TABLE IF NOT EXISTS urls (
-			id SERIAL PRIMARY KEY,
+			id INT PRIMARY KEY,
 			alias TEXT NOT NULL UNIQUE,
 		    url TEXT NOT NULL
 		);
@@ -38,4 +40,30 @@ func NewStorage(storagePath string) (*Storage, error) {
 	}
 
 	return &Storage{db: db}, nil
+}
+
+func (s *Storage) SaveURL(alias string, url string) (int, error) {
+	const operation = "storage.sqlite.SaveURL"
+
+	statement, err := s.db.Prepare(`INSERT INTO urls(alias, url) VALUES(?, ?)`)
+	if err != nil {
+		return 0, fmt.Errorf("%s - %w", operation, err)
+	}
+
+	defer statement.Close()
+
+	result, err := statement.Exec(alias, url)
+	if err != nil {
+		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+			return 0, fmt.Errorf("%s - %w", operation, storage.ErrURLExists)
+		}
+		return 0, fmt.Errorf("%s - %w", operation, err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("%s - %w", operation, err)
+	}
+
+	return int(id), nil
 }
