@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/mattn/go-sqlite3"
@@ -34,6 +35,7 @@ func NewStorage(storagePath string) (*Storage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s - %w", operation, err)
 	}
+	defer statement.Close()
 
 	if _, err := statement.Exec(); err != nil {
 		return nil, fmt.Errorf("%s - %w", operation, err)
@@ -49,7 +51,6 @@ func (s *Storage) SaveURL(alias string, url string) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("%s - %w", operation, err)
 	}
-
 	defer statement.Close()
 
 	result, err := statement.Exec(alias, url)
@@ -66,4 +67,24 @@ func (s *Storage) SaveURL(alias string, url string) (int, error) {
 	}
 
 	return int(id), nil
+}
+
+func (s *Storage) GetURL(alias string) (string, error) {
+	const operation = "storage.sqlite.GetURL"
+
+	statement, err := s.db.Prepare(`SELECT url FROM urls WHERE alias = ?`)
+	if err != nil {
+		return "", fmt.Errorf("%s - %w", operation, err)
+	}
+	defer statement.Close()
+
+	var result string
+	if err := statement.QueryRow(alias).Scan(&result); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", storage.ErrURLNotFound
+		}
+		return "", fmt.Errorf("%s - %w", operation, err)
+	}
+
+	return result, nil
 }
