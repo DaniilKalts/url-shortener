@@ -89,6 +89,32 @@ func (s *Storage) GetURL(alias string) (string, error) {
 	return result, nil
 }
 
+func (s *Storage) UpdateURL(newUrl, alias string) error {
+	operation := "storage.sqlite.UpdateURL"
+
+	statement, err := s.db.Prepare(`UPDATE urls SET url = ? WHERE alias = ?`)
+	if err != nil {
+		return fmt.Errorf("%s - %w", operation, err)
+	}
+
+	defer statement.Close()
+
+	result, err := statement.Exec(newUrl, alias)
+	if err != nil {
+		return fmt.Errorf("%s - %w", operation, err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%s - %w", operation, err)
+	}
+	if rows == 0 {
+		return storage.ErrURLNotFound
+	}
+
+	return nil
+}
+
 func (s *Storage) DeleteURL(alias string) error {
 	var operation = "storage.sqlite.DeleteURL"
 
