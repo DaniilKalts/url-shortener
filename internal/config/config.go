@@ -8,9 +8,17 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+type Environment string
+
+const (
+	EnvLocal Environment = "local"
+	EnvDev   Environment = "dev"
+	EnvProd  Environment = "prod"
+)
+
 type Config struct {
-	Env         string `yaml:"env" env-default:"local"`
-	StoragePath string `yaml:"storage_path" env-required:"true" description:"Storage path"`
+	Env         Environment `yaml:"env" env-default:"local"`
+	StoragePath string      `yaml:"storage_path" env-required:"true" description:"Storage path"`
 	HTTPServer  `yaml:"http_server"`
 }
 

@@ -52,25 +52,17 @@ func main() {
 	}
 }
 
-type Environment string
-
-const (
-	EnvLocal Environment = "local"
-	EnvDev   Environment = "dev"
-	EnvProd  Environment = "prod"
-)
-
-func setupLogger(env string) *slog.Logger {
+func setupLogger(env config.Environment) *slog.Logger {
 	var logger *slog.Logger
 
 	switch env {
-	case "local":
+	case config.EnvLocal:
 		opts := slog.HandlerOptions{Level: slog.LevelDebug}
 		logger = slog.New(slog.NewTextHandler(os.Stdout, &opts))
-	case "dev":
+	case config.EnvDev:
 		opts := slog.HandlerOptions{Level: slog.LevelDebug}
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, &opts))
-	case "prod":
+	case config.EnvProd:
 		opts := slog.HandlerOptions{Level: slog.LevelInfo}
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, &opts))
 	}
