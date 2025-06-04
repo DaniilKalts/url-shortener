@@ -10,6 +10,7 @@ import (
 
 	"github.com/DaniilKalts/url-shortener/internal/config"
 	"github.com/DaniilKalts/url-shortener/internal/http-server/handlers/redirect"
+	"github.com/DaniilKalts/url-shortener/internal/http-server/handlers/url/delete"
 	"github.com/DaniilKalts/url-shortener/internal/http-server/handlers/url/save"
 	mwLogger "github.com/DaniilKalts/url-shortener/internal/http-server/middlewares/logger"
 	"github.com/DaniilKalts/url-shortener/internal/storage/sqlite"
@@ -50,7 +51,7 @@ func main() {
 			)
 
 			r.Post("/", save.New(logger, storage))
-			// TO-DO: add DELETE /url/{id}
+			r.Delete("/{alias}", delete.New(logger, storage))
 		},
 	)
 	router.Get("/{alias}", redirect.New(logger, storage))
