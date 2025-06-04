@@ -10,7 +10,9 @@ import (
 
 	"github.com/DaniilKalts/url-shortener/internal/config"
 	"github.com/DaniilKalts/url-shortener/internal/http-server/handlers/url/save"
+	mwLogger "github.com/DaniilKalts/url-shortener/internal/http-server/middlewares/logger"
 	"github.com/DaniilKalts/url-shortener/internal/storage/sqlite"
+	"github.com/DaniilKalts/url-shortener/lib/logger/handlers/slogpretty"
 	mySlog "github.com/DaniilKalts/url-shortener/lib/logger/slog"
 )
 
@@ -32,6 +34,7 @@ func main() {
 
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
+	router.Use(mwLogger.New(logger))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
@@ -57,8 +60,7 @@ func setupLogger(env config.Environment) *slog.Logger {
 
 	switch env {
 	case config.EnvLocal:
-		opts := slog.HandlerOptions{Level: slog.LevelDebug}
-		logger = slog.New(slog.NewTextHandler(os.Stdout, &opts))
+		logger = setupPrettySlog()
 	case config.EnvDev:
 		opts := slog.HandlerOptions{Level: slog.LevelDebug}
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, &opts))
@@ -68,4 +70,10 @@ func setupLogger(env config.Environment) *slog.Logger {
 	}
 
 	return logger
+}
+
+func setupPrettySlog() *slog.Logger {
+	opts := slogpretty.PrettyHandlerOptions{SlogOpts: &slog.HandlerOptions{Level: slog.LevelDebug}}
+	handler := opts.NewPrettyHandler(os.Stdout)
+	return slog.New(handler)
 }
